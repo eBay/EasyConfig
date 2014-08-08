@@ -1,0 +1,126 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2013, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman, Vincent Latombe
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <j:getStatic var="permission" className="hudson.model.Item" field="CONFIGURE"/>
+    <l:layout norefresh="true" permission="${permission}" title="${%Custom Configuration}">
+        <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<!--  <l:side-panel>
+    <l:tasks>
+      <l:task icon="images/24x24/previous.png" href="../configure" title="${%Switch to Main Configuration (it.item.pronoun)}" />
+    </l:tasks>
+ </l:side-panel>-->
+</j:jelly>
+        <l:main-panel>
+
+            <div class="behavior-loading">${%LOADING}</div>     
+            <f:form method="post" name="config" action="configSubmit">
+                <f:block>
+            
+                    <f:section title="${%Job Configuration}" >
+                        <f:entry title="${%Job name}" help="">
+                            <f:textbox id="name" name="name" default="${it.projectName}" readOnly="true" />
+                        </f:entry>
+                    </f:section>
+       
+                    <f:section title="${%Source Code Management}">
+                        <f:entry title="${%Git Repo}" help="/plugin/SimpleProjectConfiguration/help-gitrepo.html">
+                            <f:textbox id="repo" name="repo" field="gitRepo" 
+                                       default="${it.gitRepo}"
+                          checkUrl="'checkGitRepo?value='+this.value" />
+                        </f:entry>
+           
+                        <f:entry title="${%Branch}" help="/plugin/SimpleProjectConfiguration/help-gitbranch.html" >
+                            <f:textbox id="branch" name="branch" field="gitBranch" default="${it.gitBranch}"/>
+                        </f:entry>
+                    </f:section>
+       
+                    <f:section title="${%Maven Targets}">
+
+                        <f:entry title="${%Goals}">
+                            <f:textbox id="goals" name="goals" field="mavenGoals" default="${it.mavenGoals}" 
+                          checkUrl="'checkMavenGoals?value='+this.value"/>
+                        </f:entry>
+
+                        <f:entry title="${%POM}" help="/plugin/SimpleProjectConfiguration/help-mavenpom.html">
+                            <f:textbox id="pom" name="pom" default="${it.mavenPOM}" field="mavenPOM" 
+                          checkUrl="'checkMavenPOM?value='+this.value" />
+                        </f:entry>
+                    </f:section>
+
+                    <f:section title="${%E-Mail Notification}" >
+
+                        <f:entry title="${%Recipient}" help="/plugin/SimpleProjectConfiguration/help-email.html">
+                            <f:textbox id="emailrecipient" name="emailrecipient" field="eMailRecipient" default="${it.eMailRecipient}"
+                          checkUrl="'checkeMailRecipient?value='+encodeURIComponent(this.value)"/>
+                        </f:entry>
+                    </f:section>
+                    <!--f:section title="${%Assembler Postbuild}">
+                         <f:entry title="${%Assembler Target POM.xml{relative path}}">
+                             <f:textbox id="assemblerpom" name="assemblerpom"/>
+                         </f:entry>
+                    </f:section-->
+                </f:block>
+                <f:section title="${%Post Build Steps}">
+                     <f:entry title="Find Bugs Publisher"
+                        description="Check this box to add FindBugs Publisher. Unchecked indicates not added/will be removed." >
+            <f:checkbox name="findbugscheck" checked="${it.findBugsCheck}" default="false"/>
+                    </f:entry>
+                    <f:entry title="Cobertura Publisher"
+                        description="Check this box to add Cobertura Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="coberturacheck" checked="${it.coberturaCheck}" default="false"/>
+                    </f:entry>  
+                    <f:entry title="PMD Publisher"
+                        description="Check this box to add PMD Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="PMDcheck" checked="${it.PMDCheck}" default="false"/> 
+                    </f:entry>
+                    <f:entry title="JUnit Archiver"
+                        description="Check this box to add JUnit Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="JUnitcheck" checked="${it.jUnitCheck}" default="false"/>
+                    </f:entry>
+                    <f:entry title="JavaDoc Archiver"
+                        description="Check this box to add JavaDoc Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="Javadoccheck" checked="${it.javadocCheck}" default="false"/>
+                    </f:entry>
+                    <f:entry title="Artifact Archiver"
+                        description="Check this box to add Artifact Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="Artifactcheck" checked="${it.artifactArchiverCheck}" default="false"/>
+                    </f:entry>
+                    <f:entry title="Extended E-Mail Publisher"
+                        description="Check this box to add Extended E-Mail Publisher. Unchecked indicates not added/will be removed" >
+            <f:checkbox name="eMailcheck" checked="${it.eMailCheck}" default="true"/>
+                    </f:entry>
+                </f:section>
+                <f:block>
+                    <a href="${rootURL}/job/${it.projectName}/configure">Switch to Main Configuration</a>
+                </f:block>
+                <f:bottomButtonBar>
+                    
+                    <f:submit value="${%Save}" />
+                    <f:apply/>
+                </f:bottomButtonBar>
+            </f:form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

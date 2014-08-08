@@ -1,0 +1,13 @@
+<div>Specify the branches if you'd like to track a specific branch in a repository.
+    If left blank, all branches will be examined for changes and built.<br/>
+<br/>
+    The syntax is of the form: REPOSITORYNAME/BRANCH.  In addition, BRANCH is recognized as a shorthand of */BRANCH, '*' is recognized as a wildcard, and '**' is 
+recognized as wildcard that includes the separator '/'. 
+Therefore, origin/branches* 
+would match origin/branches-foo but not origin/branches/foo, 
+while origin/branches** would match both origin/branches-foo and origin/branches/foo. <br/>
+<br/>
+If you are using namespaces to structure branches (e.g. feature1/master, or team1/requestA/rel-1.0) 
+you have to specify the full branch specifier (including "remotes/"): remotes/REPOSITORYNAME/BRANCH/WITH/NAMESPACE.<br/>
+E.g. "remotes/origin/feature1/master" <br/>
+A specific revision can be checked out by specifying the SHA1 hash of that revision in this field.</div>
