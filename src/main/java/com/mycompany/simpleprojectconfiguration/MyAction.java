@@ -42,36 +42,35 @@ import hudson.plugins.git.extensions.GitSCMExtension;
 import hudson.plugins.timestamper.*;
 import hudson.XmlFile;
 import hudson.plugins.disk_usage.DiskUsageProperty;
-
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.tasks.JavadocArchiver;
 import hudson.tasks.junit.JUnitResultArchiver;
-//import hudson.triggers.
-
 import hudson.tasks.ArtifactArchiver;
-
 import hudson.triggers.SCMTrigger;
 import hudson.triggers.Trigger;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.StringReader;
-
 import java.util.ArrayList;
-
 import java.util.HashMap;
-
 import java.util.List;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import org.jenkinsci.plugins.envinject.EnvInjectBuildWrapper;
-
 import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 
+/**
+* 
+*  MyAction class extends the Action class that is used to define Link Title,Link Icon,Link URL
+* The MyAction class is the base class where all the desired functionality of adding 
+* {@link MyAction#getBuilders()} builders , {@link MyAction#getSCM()} SCMs , 
+* {@link MyAction#getBuildWrappers()} build wrappers and {@link MyAction#getPublishers()} publishers is implemented
+* 
+*/
 public class MyAction implements Action {
 
     private final AbstractProject project;
@@ -90,6 +89,10 @@ public class MyAction implements Action {
     public boolean ArtifactArchiverCheck;
     public boolean eMailCheck;
 
+    /**
+     * getEmailCheck() method returns true if Extended EMail Notification Publisher has been added to the project.
+     * Else returns False
+     */
     public boolean geteMailCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof ExtendedEmailPublisher) {
@@ -99,6 +102,10 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getFindBugsCheck() method returns true if Find Bugs Publisher has been added to the project.
+     * Else returns False
+     */
     public boolean getFindBugsCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof FindBugsPublisher) {
@@ -108,6 +115,10 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getCoberturaCheck() method returns true if Cobertura Publisher has been added to the project.
+     * Else returns False
+     */
     public boolean getCoberturaCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof CoberturaPublisher) {
@@ -117,6 +128,10 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getPMDCheck() method returns true if PMD Publisher has been added to the project.
+     * Else returns False
+     */
     public boolean getPMDCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof PmdPublisher) {
@@ -126,6 +141,10 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getJUnitCheck() method returns true if JUnit Archiver has been added to the project.
+     * Else returns False
+     */
     public boolean getJUnitCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof JUnitResultArchiver) {
@@ -135,6 +154,10 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getJavadocCheck() method returns true if the JavaDoc Archiver has been added to the project.
+     * Else returns False
+     */
     public boolean getJavadocCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof JavadocArchiver) {
@@ -144,6 +167,11 @@ public class MyAction implements Action {
         return false;
     }
 
+    /**
+     * getArtifactArchiverCheck() method returns true if Artifact Archiver has been added to the project.
+     * Else returns False
+     */
+    
     public boolean getArtifactArchiverCheck() {
         for (Object x : p.getPublishersList()) {
             if (x instanceof ArtifactArchiver) {
@@ -158,6 +186,10 @@ public class MyAction implements Action {
         p = (Project) project;
     }
 
+    /**
+     * getGitRepo() returns the Git Repo configured in the Job SCM. 
+     * If no GIT SCM has not been configured returns the default value
+     */ 
     public String getGitRepo() {
         if (p.getScm() instanceof GitSCM) {
             GitSCM gSCM = (GitSCM) p.getScm();
@@ -169,6 +201,10 @@ public class MyAction implements Action {
         return "git@github.scm.corp.mycompany.com:{Enter your git repo here}";
     }
 
+    /**
+     * getGitBranch() returns the Git Branch configured in the Job SCM. 
+     * If no GIT SCM has not been configured returns the default value
+     */
     public String getGitBranch() {
         if (p.getScm() instanceof GitSCM) {
             GitSCM gSCM = (GitSCM) p.getScm();
@@ -179,6 +215,10 @@ public class MyAction implements Action {
         return "master";
     }
 
+    /**
+     * getMavenGoals() returns the Maven Goals configured in the Job Builders. 
+     * If no Maven Goals has not been configured returns the default value
+     */
     public String getMavenGoals() {
         if (!p.getBuildersList().isEmpty()) {
             for (Object builder : p.getBuilders()) {
@@ -191,6 +231,10 @@ public class MyAction implements Action {
         return "-U clean install";
     }
 
+    /**
+     * getMavenPOM() returns the MavenPOM configured in the Job Builders. 
+     * If no Maven POM has not been configured returns the default value
+     */
     public String getMavenPOM() {
         if (!p.getBuildersList().isEmpty()) {
             for (Object builder : p.getBuilders()) {
@@ -203,6 +247,10 @@ public class MyAction implements Action {
         return "pom.xml";
     }
 
+    /**
+     * geteMailRecipient() returns the eMail Recipient configured in the Extended e-Mail Publisher. 
+     * If the publisher has not been configured returns the default value
+     */
     public String geteMailRecipient() {
         if (!p.getPublishersList().isEmpty()) {
             for (Object pub : p.getPublishersList()) {
@@ -294,27 +342,7 @@ public class MyAction implements Action {
         return FormValidation.ok();
     }
 
-    public void setGitRepo(String gitRepo) {
-        this.gitRepo = gitRepo;
-    }
-
-    public void setGitBranch(String gitBranch) {
-        this.gitBranch = gitBranch;
-    }
-
-    public void setMavenGoals(String mavenGoals) {
-        this.mavenGoals = mavenGoals;
-    }
-
-    public void setMavenPOM(String mavenPOM) {
-        this.mavenPOM = mavenPOM;
-    }
-
-    public void seteMailRecipient(String eMailRecipient) {
-        this.eMailRecipient = eMailRecipient;
-    }
-
-    private boolean hasPermission() {
+   private boolean hasPermission() {
         ItemGroup parent = project.getParent();
         if (parent instanceof AccessControlled) {
             AccessControlled accessControlled = (AccessControlled) parent;
@@ -341,29 +369,38 @@ public class MyAction implements Action {
         FormApply.success(req.getContextPath() + '/' + "job/" + getProjectName()).generateResponse(req, rsp, null);
     }
 
+    /**
+     * 
+     * generateConfigFile() method updates the job configuration based on user input.
+     * This method adds {@link MyAction#getLogRotator()} Log Rotation, 
+     * {@link MyAction#getBuilders()} builders , {@link MyAction#getSCM()} SCMs , 
+     * {@link MyAction#getBuildWrappers()} build wrappers and {@link MyAction#getPublishers()} publishers
+     * in addition to setting other project parameters like JDK,SCM Triggers etc. If many of these parameters are already set
+     * does not override the existing values.
+     * 
+     */ 
     private void generateConfigFile(JSONObject formdata) {
 
         boolean lrFlag = false;
         LogRotator lr = project.getLogRotator();
+        // Checl to see if Log Rotation is already configured
         if (lr != null) {
             lrFlag = true;
         }
         if (!lrFlag) {
             getLogRotator();
         }
-        //if(p.getScm()!=null && p.getScm() instanceof GitSCM)
-        //gSCM=(GitSCM)p.getScm();
+        
         getSCM(formdata.getString("repo"), formdata.getString("branch"));
         try {
-            //str.append(getSCM(formdata.getString("repo"), formdata.getString("branch")));
             Boolean b = p.blockBuildWhenDownstreamBuilding();
-            if (b == false) {
+            if (!b) {
                 p.setBlockBuildWhenDownstreamBuilding(false);
             } else {
                 p.setBlockBuildWhenDownstreamBuilding(true);
             }
             b = p.blockBuildWhenUpstreamBuilding();
-            if (b == false) {
+            if (!b) {
                 p.setBlockBuildWhenUpstreamBuilding(false);
             } else {
                 p.setBlockBuildWhenUpstreamBuilding(true);
@@ -373,7 +410,7 @@ public class MyAction implements Action {
             } else {
                 p.setConcurrentBuild(true);
             }
-
+            // Check to see if JDK is configured
             if (p.getJDK() == null) {
                 if (Hudson.getInstance().getJDK("IBMJDK7") != null) {
                     p.setJDK(Hudson.getInstance().getJDK("IBMJDK7"));
@@ -398,6 +435,9 @@ public class MyAction implements Action {
         getBuildWrappers();
     }
 
+    /**
+     *  getJobProperty() method adds the DiskUsageProperty provided  by the Disk Usage Plugin to the job properties.
+     */ 
     private void getJobProperty(String conf) {
         DiskUsageProperty dp = new DiskUsageProperty();
         dp.setDiskUsageWithoutBuilds(new Long(144208));
@@ -407,7 +447,6 @@ public class MyAction implements Action {
         //dp.putSlaveWorkspace(Hudson.getInstance().getNode(currNode), curNode);
         dp.getSlaveWorkspaceUsage().put(currNode, slaveWorkspaceMap);
         try {
-
             if (!p.getAllProperties().isEmpty()) {
                 for (Object x : p.getAllProperties()) {
                     if (x instanceof DiskUsageProperty) {
@@ -421,6 +460,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     *  getLogRotator() method sets the LogRotator Configuration property of the job. 
+     */
     private void getLogRotator() {
         LogRotator lr = new LogRotator("-1", "10", "-1", "-1");
         try {
@@ -430,6 +472,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     *  getSCM() method configures the GIT SCM property of the project. 
+     */
     private void getSCM(String repo, String branch) {
         UserRemoteConfig urc = new UserRemoteConfig(repo, null, null, null);
         List<UserRemoteConfig> urcList = new ArrayList<UserRemoteConfig>();
@@ -448,12 +493,15 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getTriggers() method sets the SCM Trigger Properties of the job.
+     */ 
     private void getTriggers() {
         boolean scmtrigFlag = false;
         try {
             Trigger trig = project.getTrigger(SCMTrigger.class);
 
-            if (trig != null) //if(p.getTriggers().containsValue(SCMTrigger.class))
+            if (trig != null)
             {
                 scmtrigFlag = true;
             }
@@ -468,6 +516,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getBuilders() method adds the Maven Goals and Maven POM properties to the job builders
+     */
     private void getBuilders(String goals, String pom) {
         SettingsProvider svp = new jenkins.mvn.DefaultSettingsProvider();
         GlobalSettingsProvider gvp = new jenkins.mvn.DefaultGlobalSettingsProvider();
@@ -488,6 +539,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getFindBugsPublisher() method adds the Find Bugs Publisher Plugin to the job publisher list.
+     */
     private void getFindBugsPublisher() {
         FindBugsPublisher FBP = new FindBugsPublisher("0", "30", "low", null, false, null, null, null, null, null, null, null, null, null,
                 null, null, null, null, null, null, null, false, false, false, "**/target/findbugsXml.xml",
@@ -499,6 +553,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getPMDPublisher() method adds the PMD Publisher Plugin to the job publisher list.
+     */
     private void getPMDPublisher() {
         PmdPublisher pmd = new PmdPublisher(null, null, "low", null, false, null, null,
                 null, null, null, null, null, null, null, null, null, null, null, null, null,
@@ -510,6 +567,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getArtifactArchiver() method adds the Artifact Archiver Publisher to the job publisher list.
+     */
     private void getArtifactArchiver() {
         ArtifactArchiver arc = new ArtifactArchiver("**/target/cobertura/cobertura.ser,pom.xml", "false", false);
         try {
@@ -519,6 +579,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getCOberturaPublisher() method adds the Cobertura Publisher Plugin to the job publisher list.
+     */
     private void getCoberturaPublisher() {
         Map<CoverageMetric, Integer> covMap = new HashMap<CoverageMetric, Integer>();
         covMap.put(CoverageMetric.CONDITIONAL, 7000000);
@@ -544,6 +607,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getJUnitResultPublisher() method adds the JUnit Archiver to the job publisher list.
+     */
     private void getJUnitResultPublisher() {
         JUnitResultArchiver jArc = new JUnitResultArchiver("**/target/surefire-reports/*.xml", false, null);
         try {
@@ -553,6 +619,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getJavaDocPublisher() method adds the JavaDoc Archiver to the job publisher list.
+     */
     private void getJavaDocPublisher() {
         JavadocArchiver jArc = new JavadocArchiver("target/site/apidocs", false);
         try {
@@ -562,6 +631,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getExtendedEmailPublisher() method adds the Extended E-Mail Publisher Plugin to the job publisher list.
+     */
     private void getExtendedEmailPublisher(String recipientList) {
         List<EmailTrigger> emailTrigList = new ArrayList<EmailTrigger>();
         emailTrigList.add(new hudson.plugins.emailext.plugins.trigger.AlwaysTrigger(true,
@@ -580,6 +652,10 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * getBuildWrapper() method adds few BuildWrappers to the Job's Build Wrappers
+     * Added BuildWrappers are TimeStamper BuildWrapper, Environment Inject Build Wrapper, Pre Build Cleanup Build Wrapper
+     */
     private void getBuildWrappers() {
         Project p = (Project) project;
         boolean envInjBuildWrapFlag = false;
@@ -621,6 +697,9 @@ public class MyAction implements Action {
         }
     }
 
+    /**
+     * openConfigFile() method updates few of the project properties directly into the config.xml file of the job.
+     */
     private StringBuilder openConfigFile(String conf) {
         BufferedReader br = null;
         StringBuilder sb = new StringBuilder();
@@ -636,8 +715,6 @@ public class MyAction implements Action {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         String xml = sb.toString();
-        //if(xml.contains("H * * * *"))
-          //  xml=xml.replace("H * * * *", "H/5 * * * *");
         xml = xml.replace("<canRoam>true</canRoam>", "<canRoam>false</canRoam>");
         if (xml.contains("vectors")) {
             xml = xml.replace("<triggers class=\"vectors\">", "<triggers>");
@@ -654,6 +731,11 @@ public class MyAction implements Action {
         return sb;
     }
 
+    /**
+     * getPublisher() method adds/updates publisher of the user's choice.
+     * Publishers supported are FindBugs,PMD,JavaDoc Archiver,
+     * Cobertura,JUnit Archiver,Artifact Archiver, Extended Email 
+    */
     private void getPublishers(String recipientList, boolean findBugsCheck,
             boolean coberturaCheck, boolean PMDCheck,
             boolean JavadocCheck, boolean JUnitCheck, boolean ArtifactArchiverCheck, boolean eMailCheck) {
