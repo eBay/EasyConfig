@@ -5,7 +5,6 @@
  */
 
 package com.mycompany.simpleprojectconfiguration;
-
 import hudson.Extension;
 import hudson.model.ItemGroup;
 import hudson.model.Project;
@@ -37,7 +36,8 @@ public class MyProject extends Project<MyProject,MyBuild> implements TopLevelIte
 
         @Override
         public String getDisplayName() {
-            return "Build a Raptor Job";
+            //String str=Messages.MyProject_DisplayName();
+            return Messages.MyProject_DisplayName;
         }
 
         @Override

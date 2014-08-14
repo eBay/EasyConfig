@@ -1,27 +1,24 @@
+
 package com.mycompany.simpleprojectconfiguration;
 
 import antlr.ANTLRException;
 
 import hudson.model.Action;
-
 import hudson.model.ItemGroup;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
 import hudson.model.Project;
-
 import hudson.security.AccessControlled;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import java.io.IOException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
-
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -33,14 +30,14 @@ import hudson.plugins.emailext.plugins.EmailTrigger;
 import hudson.plugins.findbugs.FindBugsPublisher;
 import hudson.tasks.LogRotator;
 import hudson.plugins.pmd.PmdPublisher;
-import hudson.plugins.pmd.PmdProjectAction;
-import hudson.plugins.pmd.PmdResultAction;
 import hudson.plugins.cobertura.targets.CoverageMetric;
 import hudson.plugins.git.BranchSpec;
 import hudson.plugins.git.UserRemoteConfig;
 import hudson.plugins.git.extensions.GitSCMExtension;
-import hudson.plugins.timestamper.*;
+import hudson.plugins.timestamper.TimestamperBuildWrapper;
 import hudson.XmlFile;
+import hudson.model.JDK;
+import hudson.model.Job;
 import hudson.plugins.disk_usage.DiskUsageProperty;
 import hudson.plugins.ws_cleanup.PreBuildCleanup;
 import hudson.tasks.JavadocArchiver;
@@ -57,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
@@ -73,28 +71,15 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 */
 public class MyAction implements Action {
 
-    private final AbstractProject project;
-    public String gitRepo;
-    public String gitBranch;
-    public String mavenGoals;
-    public String mavenPOM;
-    public String eMailRecipient;
-    public String currNode;
-    Project p;
-    public boolean findBugsCheck;
-    public boolean coberturaCheck;
-    public boolean PMDCheck;
-    public boolean JUnitCheck;
-    public boolean JavadocCheck;
-    public boolean ArtifactArchiverCheck;
-    public boolean eMailCheck;
-
+    private String currNode;
+    private final Project currentProj;
+    
     /**
-     * getEmailCheck() method returns true if Extended EMail Notification Publisher has been added to the project.
+     * getEmailCheck() method returns true if Extended EMail Notification Publisher has been added to the currentProj.
      * Else returns False
      */
     public boolean geteMailCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof ExtendedEmailPublisher) {
                 return true;
             }
@@ -103,11 +88,11 @@ public class MyAction implements Action {
     }
 
     /**
-     * getFindBugsCheck() method returns true if Find Bugs Publisher has been added to the project.
+     * getFindBugsCheck() method returns true if Find Bugs Publisher has been added to the currentProj.
      * Else returns False
      */
     public boolean getFindBugsCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof FindBugsPublisher) {
                 return true;
             }
@@ -116,11 +101,11 @@ public class MyAction implements Action {
     }
 
     /**
-     * getCoberturaCheck() method returns true if Cobertura Publisher has been added to the project.
+     * getCoberturaCheck() method returns true if Cobertura Publisher has been added to the currentProj.
      * Else returns False
      */
     public boolean getCoberturaCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof CoberturaPublisher) {
                 return true;
             }
@@ -129,11 +114,11 @@ public class MyAction implements Action {
     }
 
     /**
-     * getPMDCheck() method returns true if PMD Publisher has been added to the project.
+     * getPMDCheck() method returns true if PMD Publisher has been added to the currentProj.
      * Else returns False
      */
     public boolean getPMDCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof PmdPublisher) {
                 return true;
             }
@@ -142,11 +127,11 @@ public class MyAction implements Action {
     }
 
     /**
-     * getJUnitCheck() method returns true if JUnit Archiver has been added to the project.
+     * getJUnitCheck() method returns true if JUnit Archiver has been added to the currentProj.
      * Else returns False
      */
     public boolean getJUnitCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof JUnitResultArchiver) {
                 return true;
             }
@@ -155,11 +140,11 @@ public class MyAction implements Action {
     }
 
     /**
-     * getJavadocCheck() method returns true if the JavaDoc Archiver has been added to the project.
+     * getJavadocCheck() method returns true if the JavaDoc Archiver has been added to the currentProj.
      * Else returns False
      */
     public boolean getJavadocCheck() {
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof JavadocArchiver) {
                 return true;
             }
@@ -168,12 +153,13 @@ public class MyAction implements Action {
     }
 
     /**
-     * getArtifactArchiverCheck() method returns true if Artifact Archiver has been added to the project.
+     * getArtifactArchiverCheck() method returns true if Artifact Archiver has been added to the currentProj.
      * Else returns False
      */
     
     public boolean getArtifactArchiverCheck() {
-        for (Object x : p.getPublishersList()) {
+        
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof ArtifactArchiver) {
                 return true;
             }
@@ -182,8 +168,8 @@ public class MyAction implements Action {
     }
 
     public MyAction(AbstractProject project) {
-        this.project = project;
-        p = (Project) project;
+        currentProj = (Project) project;
+        Messages m=new Messages();
     }
 
     /**
@@ -191,14 +177,15 @@ public class MyAction implements Action {
      * If no GIT SCM has not been configured returns the default value
      */ 
     public String getGitRepo() {
-        if (p.getScm() instanceof GitSCM) {
-            GitSCM gSCM = (GitSCM) p.getScm();
+        if (currentProj.getScm() instanceof GitSCM) {
+            GitSCM gSCM = (GitSCM) currentProj.getScm();
             //List<UserRemoteConfig> lUsr=gSCM.getUserRemoteConfigs();
             for (UserRemoteConfig usr : gSCM.getUserRemoteConfigs()) {
                 return usr.getUrl();
             }
         }
-        return "git@github.scm.corp.mycompany.com:{Enter your git repo here}";
+        //String str=Messages.MyAction_DefaultGitRepo();
+        return Messages.MyAction_DefaultGitRepo;
     }
 
     /**
@@ -206,13 +193,13 @@ public class MyAction implements Action {
      * If no GIT SCM has not been configured returns the default value
      */
     public String getGitBranch() {
-        if (p.getScm() instanceof GitSCM) {
-            GitSCM gSCM = (GitSCM) p.getScm();
+        if (currentProj.getScm() instanceof GitSCM) {
+            GitSCM gSCM = (GitSCM) currentProj.getScm();
             for (BranchSpec br : gSCM.getBranches()) {
                 return br.getName();
             }
         }
-        return "master";
+        return Messages.MyAction_DefaultGitBranch;
     }
 
     /**
@@ -220,15 +207,15 @@ public class MyAction implements Action {
      * If no Maven Goals has not been configured returns the default value
      */
     public String getMavenGoals() {
-        if (!p.getBuildersList().isEmpty()) {
-            for (Object builder : p.getBuilders()) {
+        if (!currentProj.getBuildersList().isEmpty()) {
+            for (Object builder : currentProj.getBuilders()) {
                 if (builder instanceof hudson.tasks.Maven) {
                     hudson.tasks.Maven mvn = (hudson.tasks.Maven) builder;
                     return mvn.getTargets();
                 }
             }
         }
-        return "-U clean install";
+        return Messages.MyAction_DefaultMavenGoals;
     }
 
     /**
@@ -236,15 +223,15 @@ public class MyAction implements Action {
      * If no Maven POM has not been configured returns the default value
      */
     public String getMavenPOM() {
-        if (!p.getBuildersList().isEmpty()) {
-            for (Object builder : p.getBuilders()) {
+        if (!currentProj.getBuildersList().isEmpty()) {
+            for (Object builder : currentProj.getBuilders()) {
                 if (builder instanceof hudson.tasks.Maven) {
                     hudson.tasks.Maven mvn = (hudson.tasks.Maven) builder;
                     return mvn.pom;
                 }
             }
         }
-        return "pom.xml";
+        return Messages.MyAction_DefaultMavenPOM;
     }
 
     /**
@@ -252,19 +239,19 @@ public class MyAction implements Action {
      * If the publisher has not been configured returns the default value
      */
     public String geteMailRecipient() {
-        if (!p.getPublishersList().isEmpty()) {
-            for (Object pub : p.getPublishersList()) {
+        if (!currentProj.getPublishersList().isEmpty()) {
+            for (Object pub : currentProj.getPublishersList()) {
                 if (pub instanceof ExtendedEmailPublisher) {
                     ExtendedEmailPublisher eMailPub = (ExtendedEmailPublisher) pub;
                     return eMailPub.recipientList;
                 }
             }
         }
-        return "DL-myCompany-PlatformFrameworks-QE-SJ@corp.mycompany.com";
+        return Messages.MyAction_DefaultEMailID;
     }
 
     public String getProjectName() {
-        return project.getDisplayName();
+        return currentProj.getDisplayName();
     }
 
     public String getIconFileName() {
@@ -291,33 +278,33 @@ public class MyAction implements Action {
     public FormValidation doCheckGitRepo(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.contains("{Enter your git")) {
-            return FormValidation.error("Please change default value");
+            return FormValidation.error(Messages.MyAction_defaultGitErrorMessage);
         }
         if (!value.endsWith(".git")) {
-            return FormValidation.error("Invalid Git Repo");
+            return FormValidation.error(Messages.MyAction_InvalidGitErrorMessage);
         }
         if (value.isEmpty()) {
-            return FormValidation.error("Please enter Git Repository");
+            return FormValidation.error(Messages.MyAction_gitEmptyErrorMessage);
         }
 
-        return FormValidation.ok("Save form and check main configuration page for other errors(if any)");
+        return FormValidation.ok(Messages.MyAction_FormOK);
     }
 
     public FormValidation doCheckMavenGoals(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error("Please specify Maven Goals");
+            return FormValidation.error(Messages.MyAction_MavenGoalsEmptyErrorMessage);
         }
-        return FormValidation.ok("Save form and check main configuration page for other errors(if any)");
+        return FormValidation.ok(Messages.MyAction_FormOK);
     }
 
     public FormValidation doCheckMavenPOM(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error("Please Specify a Maven POM");
+            return FormValidation.error(Messages.MyAction_MavenPOMEmptyErrorMessage);
         }
         if (!value.endsWith(".xml")) {
-            return FormValidation.error("Specify valid XML File");
+            return FormValidation.error(Messages.MyAction_InvalidPOMErrorMessage);
         }
         return FormValidation.ok();
     }
@@ -325,7 +312,7 @@ public class MyAction implements Action {
     public FormValidation doCheckeMailRecipient(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error("Please specify eMail ID/DL to notify to");
+            return FormValidation.error(Messages.MyAction_eMailEmptyErrorMessage);
         }
         Pattern pattern;
         Matcher matcher;
@@ -336,14 +323,14 @@ public class MyAction implements Action {
         pattern = Pattern.compile(EMAIL_PATTERN);
         matcher = pattern.matcher(value);
         if (!matcher.matches()) {
-            return FormValidation.error("Invalid Format");
+            return FormValidation.error(Messages.MyAction_InValidEMailErrorMessage);
         }
 
         return FormValidation.ok();
     }
 
    private boolean hasPermission() {
-        ItemGroup parent = project.getParent();
+        ItemGroup parent = currentProj.getParent();
         if (parent instanceof AccessControlled) {
             AccessControlled accessControlled = (AccessControlled) parent;
             return accessControlled.hasPermission(AbstractProject.CONFIGURE);
@@ -356,22 +343,23 @@ public class MyAction implements Action {
 
         //AbstractItem item = (AbstractItem) Jenkins.getInstance().getItemByFullName(formdata.getString("name"));
         //String config = generateConfigFile(formdata);
-        generateConfigFile(formdata);
-        p.save();
-        project.save();
-        XmlFile config = project.getConfigFile();
+        
+        updateJobConfiguration(formdata);
+        currentProj.save();
+        XmlFile config = currentProj.getConfigFile();
         String conf = config.toString();
         StringBuilder configXML = openConfigFile(conf);
-        project.updateByXml(new StreamSource(new StringReader(configXML.toString())));
+        Source source=new StreamSource(new StringReader(configXML.toString()));
+        currentProj.updateByXml(source);
         getJobProperty(conf);
-        p.save();
-        //project.addAction(hudson.plugins.);
+        currentProj.save();
+        //currentProj.addAction(hudson.plugins.);
         FormApply.success(req.getContextPath() + '/' + "job/" + getProjectName()).generateResponse(req, rsp, null);
     }
 
     /**
      * 
-     * generateConfigFile() method updates the job configuration based on user input.
+     * updateJobConfiguration() method updates the job configuration based on user input.
      * This method adds {@link MyAction#getLogRotator()} Log Rotation, 
      * {@link MyAction#getBuilders()} builders , {@link MyAction#getSCM()} SCMs , 
      * {@link MyAction#getBuildWrappers()} build wrappers and {@link MyAction#getPublishers()} publishers
@@ -379,11 +367,12 @@ public class MyAction implements Action {
      * does not override the existing values.
      * 
      */ 
-    private void generateConfigFile(JSONObject formdata) {
+    private void updateJobConfiguration(JSONObject formdata) {
 
         boolean lrFlag = false;
-        LogRotator lr = project.getLogRotator();
-        // Checl to see if Log Rotation is already configured
+        LogRotator lr = (LogRotator) currentProj.getBuildDiscarder();
+        
+        // Check to see if Log Rotation is already configured
         if (lr != null) {
             lrFlag = true;
         }
@@ -393,43 +382,48 @@ public class MyAction implements Action {
         
         getSCM(formdata.getString("repo"), formdata.getString("branch"));
         try {
-            Boolean b = p.blockBuildWhenDownstreamBuilding();
+            Boolean b = currentProj.blockBuildWhenDownstreamBuilding();
             if (!b) {
-                p.setBlockBuildWhenDownstreamBuilding(false);
+                currentProj.setBlockBuildWhenDownstreamBuilding(false);
             } else {
-                p.setBlockBuildWhenDownstreamBuilding(true);
+                currentProj.setBlockBuildWhenDownstreamBuilding(true);
             }
-            b = p.blockBuildWhenUpstreamBuilding();
+            b = currentProj.blockBuildWhenUpstreamBuilding();
             if (!b) {
-                p.setBlockBuildWhenUpstreamBuilding(false);
+                currentProj.setBlockBuildWhenUpstreamBuilding(false);
             } else {
-                p.setBlockBuildWhenUpstreamBuilding(true);
+                currentProj.setBlockBuildWhenUpstreamBuilding(true);
             }
-            if (!p.isConcurrentBuild()) {
-                p.setConcurrentBuild(false);
+            if (!currentProj.isConcurrentBuild()) {
+                currentProj.setConcurrentBuild(false);
             } else {
-                p.setConcurrentBuild(true);
+                currentProj.setConcurrentBuild(true);
             }
             // Check to see if JDK is configured
-            if (p.getJDK() == null) {
-                if (Hudson.getInstance().getJDK("IBMJDK7") != null) {
-                    p.setJDK(Hudson.getInstance().getJDK("IBMJDK7"));
+            if (currentProj.getJDK() == null) {
+                if(!Hudson.getInstance().getJDKs().isEmpty())
+                    for(JDK jdk:Hudson.getInstance().getJDKs())
+                    {
+                        if (Hudson.getInstance().getJDK(jdk.getName()) != null) {
+                            currentProj.setJDK(jdk);
+                        break;
+                    }
                 }
             } else {
-                p.setJDK(p.getJDK());
+                currentProj.setJDK(currentProj.getJDK());
             }
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         getTriggers();
         getBuilders(formdata.getString("goals"), formdata.getString("pom"));
-        findBugsCheck = formdata.getBoolean("findbugscheck");
-        coberturaCheck = formdata.getBoolean("coberturacheck");
-        PMDCheck = formdata.getBoolean("PMDcheck");
-        JavadocCheck = formdata.getBoolean("Javadoccheck");
-        JUnitCheck = formdata.getBoolean("JUnitcheck");
-        ArtifactArchiverCheck = formdata.getBoolean("Artifactcheck");
-        eMailCheck = formdata.getBoolean("eMailcheck");
+        boolean findBugsCheck = formdata.getBoolean("findbugscheck");
+        boolean coberturaCheck = formdata.getBoolean("coberturacheck");
+        boolean PMDCheck = formdata.getBoolean("PMDcheck");
+        boolean JavadocCheck = formdata.getBoolean("Javadoccheck");
+        boolean JUnitCheck = formdata.getBoolean("JUnitcheck");
+        boolean ArtifactArchiverCheck = formdata.getBoolean("Artifactcheck");
+        boolean eMailCheck = formdata.getBoolean("eMailcheck");
         getPublishers(formdata.getString("emailrecipient"), findBugsCheck, coberturaCheck, PMDCheck,
                 JavadocCheck, JUnitCheck, ArtifactArchiverCheck, eMailCheck);
         getBuildWrappers();
@@ -444,17 +438,16 @@ public class MyAction implements Action {
         ConcurrentHashMap<String, Long> slaveWorkspaceMap = new ConcurrentHashMap<String, Long>();
         String curNode = conf.substring(0, conf.lastIndexOf("/"));
         slaveWorkspaceMap.put(curNode, new Long(326983836));
-        //dp.putSlaveWorkspace(Hudson.getInstance().getNode(currNode), curNode);
         dp.getSlaveWorkspaceUsage().put(currNode, slaveWorkspaceMap);
         try {
-            if (!p.getAllProperties().isEmpty()) {
-                for (Object x : p.getAllProperties()) {
+            if (!currentProj.getAllProperties().isEmpty()) {
+                for (Object x : currentProj.getAllProperties()) {
                     if (x instanceof DiskUsageProperty) {
-                        p.removeProperty((DiskUsageProperty) x);
+                        currentProj.removeProperty((DiskUsageProperty) x);
                     }
                 }
             }
-            p.addProperty(dp);
+            currentProj.addProperty(dp);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -464,16 +457,19 @@ public class MyAction implements Action {
      *  getLogRotator() method sets the LogRotator Configuration property of the job. 
      */
     private void getLogRotator() {
+        
         LogRotator lr = new LogRotator("-1", "10", "-1", "-1");
+        
         try {
-            project.setLogRotator(lr);
+            currentProj.setBuildDiscarder(lr);
+            
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
         }
     }
 
     /**
-     *  getSCM() method configures the GIT SCM property of the project. 
+     *  getSCM() method configures the GIT SCM property of the currentProj. 
      */
     private void getSCM(String repo, String branch) {
         UserRemoteConfig urc = new UserRemoteConfig(repo, null, null, null);
@@ -487,7 +483,7 @@ public class MyAction implements Action {
         gsExtList.add(gitExt);
         GitSCM gSCM = new GitSCM(urcList, brSpecList, false, null, null, null, gsExtList);
         try {
-            p.setScm(gSCM);
+            currentProj.setScm(gSCM);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
         }
@@ -499,7 +495,7 @@ public class MyAction implements Action {
     private void getTriggers() {
         boolean scmtrigFlag = false;
         try {
-            Trigger trig = project.getTrigger(SCMTrigger.class);
+            Trigger trig = currentProj.getTrigger(SCMTrigger.class);
 
             if (trig != null)
             {
@@ -507,7 +503,7 @@ public class MyAction implements Action {
             }
             if (!scmtrigFlag) {
                 SCMTrigger scmtrig = new SCMTrigger("H * * * *", false);
-                p.addTrigger(scmtrig);
+                currentProj.addTrigger(scmtrig);
             }
         } catch (ANTLRException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
@@ -523,20 +519,29 @@ public class MyAction implements Action {
         SettingsProvider svp = new jenkins.mvn.DefaultSettingsProvider();
         GlobalSettingsProvider gvp = new jenkins.mvn.DefaultGlobalSettingsProvider();
         try {
-            for (Object x : p.getBuildersList()) {
+            for (Object x : currentProj.getBuildersList()) {
                 if (x instanceof hudson.tasks.Maven) {
                     //mavenFlag = true;
-                    p.getBuildersList().remove(x);
+                    currentProj.getBuildersList().remove(x);
                 }
             }
-            hudson.tasks.Maven mvn = new hudson.tasks.Maven(goals, "Maven 3.0.5", pom, null,
+            
+            hudson.tasks.Maven mvn=null;
+            hudson.tasks.Maven.DescriptorImpl d=new hudson.tasks.Maven.DescriptorImpl();
+            if(d.getInstallations().length!=0)
+            {
+                for (hudson.tasks.Maven.MavenInstallation m : d.getInstallations())
+                {
+                    mvn = new hudson.tasks.Maven(goals, m.getName(), pom, null,
                     null, true, svp, gvp);
-
-            //if(!mavenFlag)
-            p.getBuildersList().add(mvn);
+                    break;
+                }
+                currentProj.getBuildersList().add(mvn);
+            }    
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
 
     /**
@@ -547,7 +552,7 @@ public class MyAction implements Action {
                 null, null, null, null, null, null, null, false, false, false, "**/target/findbugsXml.xml",
                 false, false, null, null);
         try {
-            p.getPublishersList().add(FBP);
+            currentProj.getPublishersList().add(FBP);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -561,7 +566,7 @@ public class MyAction implements Action {
                 null, null, null, null, null, null, null, null, null, null, null, null, null,
                 null, false, false, false, false, "**/pmd.xml");
         try {
-            p.getPublishersList().add(pmd);
+            currentProj.getPublishersList().add(pmd);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -573,7 +578,7 @@ public class MyAction implements Action {
     private void getArtifactArchiver() {
         ArtifactArchiver arc = new ArtifactArchiver("**/target/cobertura/cobertura.ser,pom.xml", "false", false);
         try {
-            p.getPublishersList().add(arc);
+            currentProj.getPublishersList().add(arc);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -601,7 +606,7 @@ public class MyAction implements Action {
         cTarg = new CoverageTarget(covMap);
         cPub.setFailingTarget(cTarg);
         try {
-            project.getPublishersList().add(cPub);
+            currentProj.getPublishersList().add(cPub);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -613,7 +618,7 @@ public class MyAction implements Action {
     private void getJUnitResultPublisher() {
         JUnitResultArchiver jArc = new JUnitResultArchiver("**/target/surefire-reports/*.xml", false, null);
         try {
-            p.getPublishersList().add(jArc);
+            currentProj.getPublishersList().add(jArc);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -625,7 +630,7 @@ public class MyAction implements Action {
     private void getJavaDocPublisher() {
         JavadocArchiver jArc = new JavadocArchiver("target/site/apidocs", false);
         try {
-            p.getPublishersList().add(jArc);
+            currentProj.getPublishersList().add(jArc);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -646,7 +651,7 @@ public class MyAction implements Action {
                 0, "$DEFAULT_REPLYTO", false,
                 emailTrigList, null);
         try {
-            p.getPublishersList().add(eMailPub);
+            currentProj.getPublishersList().add(eMailPub);
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -657,11 +662,10 @@ public class MyAction implements Action {
      * Added BuildWrappers are TimeStamper BuildWrapper, Environment Inject Build Wrapper, Pre Build Cleanup Build Wrapper
      */
     private void getBuildWrappers() {
-        Project p = (Project) project;
         boolean envInjBuildWrapFlag = false;
         boolean TimestamperBuildWrapFlag = false;
         boolean PBCBuildWrapFlag = false;
-        for (Object x : p.getBuildWrappersList()) {
+        for (Object x : currentProj.getBuildWrappersList()) {
             if (x instanceof EnvInjectBuildWrapper) {
                 envInjBuildWrapFlag = true;
                 continue;
@@ -672,7 +676,6 @@ public class MyAction implements Action {
             }
             if (x instanceof PreBuildCleanup) {
                 PBCBuildWrapFlag = true;
-                continue;
             }
         }
 
@@ -684,13 +687,13 @@ public class MyAction implements Action {
         envInj.setInfo(eijpo);
         try {
             if (!PBCBuildWrapFlag) {
-                p.getBuildWrappersList().add(pbc);
+                currentProj.getBuildWrappersList().add(pbc);
             }
             if (!envInjBuildWrapFlag) {
-                p.getBuildWrappersList().add(envInj);
+                currentProj.getBuildWrappersList().add(envInj);
             }
             if (!TimestamperBuildWrapFlag) {
-                p.getBuildWrappersList().add(tmbw);
+                currentProj.getBuildWrappersList().add(tmbw);
             }
         } catch (IOException ex) {
             Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
@@ -748,7 +751,7 @@ public class MyAction implements Action {
         boolean extendedEMailPubFlag = false;
         boolean ArtifactArchiverFlag = false;
 
-        for (Object x : p.getPublishersList()) {
+        for (Object x : currentProj.getPublishersList()) {
             if (x instanceof PmdPublisher) {
                 PMDPublisherFlag = true;
                 continue;
@@ -764,8 +767,6 @@ public class MyAction implements Action {
             if (x instanceof ExtendedEmailPublisher) {
 
                 extendedEMailPubFlag = true;
-                    //p.getPublishersList().remove(ExtendedEmailPublisher.class);
-
                 continue;
             }
             if (x instanceof JUnitResultArchiver) {
@@ -783,16 +784,16 @@ public class MyAction implements Action {
         }
         try {
             if (FindBugsFlag && !findBugsCheck) {
-                project.getPublishersList().remove(FindBugsPublisher.class);
+                currentProj.getPublishersList().remove(FindBugsPublisher.class);
             } else {
                 if (findBugsCheck && !FindBugsFlag) {
                     getFindBugsPublisher();
                 }
             }
-            //if(!p.getPublishersList().contains(PmdPublisher.PUBLISHERS))
+            
             if (PMDPublisherFlag && !PMDCheck) {
 
-                project.getPublishersList().remove(PmdPublisher.class);
+                currentProj.getPublishersList().remove(PmdPublisher.class);
             } else {
                 if (PMDCheck && !PMDPublisherFlag) {
                     getPMDPublisher();
@@ -800,7 +801,7 @@ public class MyAction implements Action {
             }
             if (ArtifactArchiverFlag && !ArtifactArchiverCheck) {
 
-                project.getPublishersList().remove(ArtifactArchiver.class);
+                currentProj.getPublishersList().remove(ArtifactArchiver.class);
             } else {
                 if (ArtifactArchiverCheck && !ArtifactArchiverFlag) {
                     getArtifactArchiver();
@@ -808,7 +809,7 @@ public class MyAction implements Action {
             }
             if (CoberturaPubFlag && !coberturaCheck) {
 
-                project.getPublishersList().remove(CoberturaPublisher.class);
+                currentProj.getPublishersList().remove(CoberturaPublisher.class);
             } else {
                 if (coberturaCheck && !CoberturaPubFlag) {
                     getCoberturaPublisher();
@@ -816,7 +817,7 @@ public class MyAction implements Action {
             }
             if (JUnitPubFlag && !JUnitCheck) {
 
-                project.getPublishersList().remove(JUnitResultArchiver.class);
+                currentProj.getPublishersList().remove(JUnitResultArchiver.class);
             } else {
                 if (JUnitCheck && !JUnitPubFlag) {
                     getJUnitResultPublisher();
@@ -824,7 +825,7 @@ public class MyAction implements Action {
             }
             if (JavaDocPubFlag && !JavadocCheck) {
 
-                project.getPublishersList().remove(JavadocArchiver.class);
+                currentProj.getPublishersList().remove(JavadocArchiver.class);
             } else {
                 if (JavadocCheck && !JavaDocPubFlag) {
                     getJavaDocPublisher();
@@ -832,10 +833,10 @@ public class MyAction implements Action {
             }
             if (extendedEMailPubFlag) {
                 if (!eMailCheck) {
-                    project.getPublishersList().remove(ExtendedEmailPublisher.class);
+                    currentProj.getPublishersList().remove(ExtendedEmailPublisher.class);
                 }
                 if (eMailCheck) {
-                    project.getPublishersList().remove(ExtendedEmailPublisher.class);
+                    currentProj.getPublishersList().remove(ExtendedEmailPublisher.class);
                     getExtendedEmailPublisher(recipientList);
                 }
             } else {

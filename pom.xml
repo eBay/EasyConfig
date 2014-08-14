@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.509.3</version><!-- which version of Jenkins is this plugin built against? -->
+        <version>1.506</version><!-- which version of Jenkins is this plugin built against? -->
     </parent>
 
     <groupId>com.mycompany</groupId>
@@ -60,12 +60,12 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>git-client</artifactId>
-            <version>1.9.2</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>credentials</artifactId>
-            <version>1.12</version>
+            <version>1.10</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -179,6 +179,19 @@
             <artifactId>token-macro</artifactId>
             <version>1.10</version>
         </dependency>
-       
+        <dependency>
+            <groupId>org.jenkins-ci.main</groupId>
+            <artifactId>cli</artifactId>
+            <version>1.574</version>
+            <type>jar</type>
+        </dependency>
+        
+        <!-- Localizer Dependency-->
+<!--        <dependency>
+            <groupId>org.jvnet.localizer</groupId>
+            <artifactId>localizer</artifactId>
+            <version>1.10</version>
+        </dependency>-->
+        
     </dependencies>
 </project>
