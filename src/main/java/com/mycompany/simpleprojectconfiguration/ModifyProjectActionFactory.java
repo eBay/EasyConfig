@@ -4,13 +4,14 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TransientProjectActionFactory;
 import hudson.model.AbstractProject;
+import java.util.ArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
 
 /**
 *
-* ModifyProjectActionFactory class extending from {@Link TransientProjectActionFactory} adds the "Basic Configuration" Link to the Jenkins Side Bar
+* ModifyProjectActionFactory class extending from {@link TransientProjectActionFactory} adds the "Basic Configuration" Link to the Jenkins Side Bar
 * 
 */
 
@@ -23,6 +24,5 @@ public class ModifyProjectActionFactory extends TransientProjectActionFactory{
 	@Override
 	public Collection<? extends Action> createFor(AbstractProject target){
             return Collections.singleton(new MyAction(target));
-            
-	}
+        }
 }

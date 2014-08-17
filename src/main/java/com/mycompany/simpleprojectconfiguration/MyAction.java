@@ -169,7 +169,6 @@ public class MyAction implements Action {
 
     public MyAction(AbstractProject project) {
         currentProj = (Project) project;
-        Messages m=new Messages();
     }
 
     /**
@@ -179,13 +178,11 @@ public class MyAction implements Action {
     public String getGitRepo() {
         if (currentProj.getScm() instanceof GitSCM) {
             GitSCM gSCM = (GitSCM) currentProj.getScm();
-            //List<UserRemoteConfig> lUsr=gSCM.getUserRemoteConfigs();
             for (UserRemoteConfig usr : gSCM.getUserRemoteConfigs()) {
                 return usr.getUrl();
             }
         }
-        //String str=Messages.MyAction_DefaultGitRepo();
-        return Messages.MyAction_DefaultGitRepo;
+        return Messages.MyAction_DefaultGitRepo();
     }
 
     /**
@@ -199,7 +196,7 @@ public class MyAction implements Action {
                 return br.getName();
             }
         }
-        return Messages.MyAction_DefaultGitBranch;
+        return Messages.MyAction_DefaultGitBranch();
     }
 
     /**
@@ -215,7 +212,7 @@ public class MyAction implements Action {
                 }
             }
         }
-        return Messages.MyAction_DefaultMavenGoals;
+        return Messages.MyAction_DefaultMavenGoals();
     }
 
     /**
@@ -231,7 +228,7 @@ public class MyAction implements Action {
                 }
             }
         }
-        return Messages.MyAction_DefaultMavenPOM;
+        return Messages.MyAction_DefaultMavenPOM();
     }
 
     /**
@@ -247,7 +244,7 @@ public class MyAction implements Action {
                 }
             }
         }
-        return Messages.MyAction_DefaultEMailID;
+        return Messages.MyAction_DefaultEMailID();
     }
 
     public String getProjectName() {
@@ -277,34 +274,34 @@ public class MyAction implements Action {
 
     public FormValidation doCheckGitRepo(@QueryParameter String value)
             throws IOException, ServletException {
-        if (value.contains("{Enter your git")) {
-            return FormValidation.error(Messages.MyAction_defaultGitErrorMessage);
+        if (value.contains("Enter your git")) {
+            return FormValidation.error(Messages.MyAction_defaultGitErrorMessage());
         }
         if (!value.endsWith(".git")) {
-            return FormValidation.error(Messages.MyAction_InvalidGitErrorMessage);
+            return FormValidation.error(Messages.MyAction_InvalidGitErrorMessage());
         }
         if (value.isEmpty()) {
-            return FormValidation.error(Messages.MyAction_gitEmptyErrorMessage);
+            return FormValidation.error(Messages.MyAction_gitEmptyErrorMessage());
         }
 
-        return FormValidation.ok(Messages.MyAction_FormOK);
+        return FormValidation.ok(Messages.MyAction_FormOK());
     }
 
     public FormValidation doCheckMavenGoals(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error(Messages.MyAction_MavenGoalsEmptyErrorMessage);
+            return FormValidation.error(Messages.MyAction_MavenGoalsEmptyErrorMessage());
         }
-        return FormValidation.ok(Messages.MyAction_FormOK);
+        return FormValidation.ok(Messages.MyAction_FormOK());
     }
 
     public FormValidation doCheckMavenPOM(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error(Messages.MyAction_MavenPOMEmptyErrorMessage);
+            return FormValidation.error(Messages.MyAction_MavenPOMEmptyErrorMessage());
         }
         if (!value.endsWith(".xml")) {
-            return FormValidation.error(Messages.MyAction_InvalidPOMErrorMessage);
+            return FormValidation.error(Messages.MyAction_InvalidPOMErrorMessage());
         }
         return FormValidation.ok();
     }
@@ -312,7 +309,7 @@ public class MyAction implements Action {
     public FormValidation doCheckeMailRecipient(@QueryParameter String value)
             throws IOException, ServletException {
         if (value.isEmpty()) {
-            return FormValidation.error(Messages.MyAction_eMailEmptyErrorMessage);
+            return FormValidation.error(Messages.MyAction_eMailEmptyErrorMessage());
         }
         Pattern pattern;
         Matcher matcher;
@@ -323,7 +320,7 @@ public class MyAction implements Action {
         pattern = Pattern.compile(EMAIL_PATTERN);
         matcher = pattern.matcher(value);
         if (!matcher.matches()) {
-            return FormValidation.error(Messages.MyAction_InValidEMailErrorMessage);
+            return FormValidation.error(Messages.MyAction_InValidEMailErrorMessage());
         }
 
         return FormValidation.ok();
@@ -340,10 +337,6 @@ public class MyAction implements Action {
 
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         JSONObject formdata = req.getSubmittedForm();
-
-        //AbstractItem item = (AbstractItem) Jenkins.getInstance().getItemByFullName(formdata.getString("name"));
-        //String config = generateConfigFile(formdata);
-        
         updateJobConfiguration(formdata);
         currentProj.save();
         XmlFile config = currentProj.getConfigFile();
@@ -353,7 +346,6 @@ public class MyAction implements Action {
         currentProj.updateByXml(source);
         getJobProperty(conf);
         currentProj.save();
-        //currentProj.addAction(hudson.plugins.);
         FormApply.success(req.getContextPath() + '/' + "job/" + getProjectName()).generateResponse(req, rsp, null);
     }
 
@@ -521,7 +513,6 @@ public class MyAction implements Action {
         try {
             for (Object x : currentProj.getBuildersList()) {
                 if (x instanceof hudson.tasks.Maven) {
-                    //mavenFlag = true;
                     currentProj.getBuildersList().remove(x);
                 }
             }

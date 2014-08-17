@@ -36,8 +36,7 @@ public class MyProject extends Project<MyProject,MyBuild> implements TopLevelIte
 
         @Override
         public String getDisplayName() {
-            //String str=Messages.MyProject_DisplayName();
-            return Messages.MyProject_DisplayName;
+            return Messages.MyProject_DisplayName();
         }
 
         @Override
@@ -45,5 +44,4 @@ public class MyProject extends Project<MyProject,MyBuild> implements TopLevelIte
             return new MyProject(parent,string);
         }
      }
-    
 }
