@@ -274,16 +274,16 @@ public class BasicConfigurationAction implements Action {
 
     public FormValidation doCheckGitRepo(@QueryParameter String value)
             throws IOException, ServletException {
+        Matcher gitPattern = Pattern.compile("((git|ssh|http(s)?)|(git@[\\w\\.]+))(:(//)?)([\\w\\.@\\:/\\-~]+)(\\.git)").matcher(value);
         if (value.contains("Enter your git")) {
             return FormValidation.error(Messages.MyAction_defaultGitErrorMessage());
-        }
-        if (!value.endsWith(".git")) {
-            return FormValidation.error(Messages.MyAction_InvalidGitErrorMessage());
         }
         if (value.isEmpty()) {
             return FormValidation.error(Messages.MyAction_gitEmptyErrorMessage());
         }
-
+        if(!gitPattern.matches()){
+            return FormValidation.error(Messages.MyAction_InvalidGitErrorMessage());
+        }
         return FormValidation.ok(Messages.MyAction_FormOK());
     }
 
@@ -772,7 +772,6 @@ public class BasicConfigurationAction implements Action {
             }
             if (x instanceof JavadocArchiver) {
                 JavaDocPubFlag = true;
-                continue;
             }
         }
         try {
