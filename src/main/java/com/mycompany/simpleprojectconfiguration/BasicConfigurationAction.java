@@ -425,21 +425,23 @@ public class BasicConfigurationAction implements Action {
      *  getJobProperty() method adds the DiskUsageProperty provided  by the Disk Usage Plugin to the job properties.
      */ 
     private void getJobProperty(String conf) {
-        DiskUsageProperty dp = new DiskUsageProperty();
-        dp.setDiskUsageWithoutBuilds(new Long(144208));
-        ConcurrentHashMap<String, Long> slaveWorkspaceMap = new ConcurrentHashMap<String, Long>();
-        String curNode = conf.substring(0, conf.lastIndexOf("/"));
-        slaveWorkspaceMap.put(curNode, new Long(326983836));
-        dp.getSlaveWorkspaceUsage().put(currNode, slaveWorkspaceMap);
         try {
+            DiskUsageProperty dp = new DiskUsageProperty();
+            dp.setDiskUsageWithoutBuilds(new Long(144208));
+            ConcurrentHashMap<String, Long> slaveWorkspaceMap = new ConcurrentHashMap<String, Long>();
+            String curNode = conf.substring(0, conf.lastIndexOf("/"));
+            slaveWorkspaceMap.put(curNode, new Long(326983836));
+            dp.getSlaveWorkspaceUsage().put(currNode, slaveWorkspaceMap);
             if (!currentProj.getAllProperties().isEmpty()) {
-                for (Object x : currentProj.getAllProperties()) {
-                    if (x instanceof DiskUsageProperty) {
-                        currentProj.removeProperty((DiskUsageProperty) x);
+                    for (Object x : currentProj.getAllProperties()) {
+                        if (x instanceof DiskUsageProperty) {
+                            currentProj.removeProperty((DiskUsageProperty) x);
+                        }
                     }
                 }
-            }
             currentProj.addProperty(dp);
+            if(currNode.equals("master") && currentProj.getProperty(DiskUsageProperty.class)!=null)
+                currentProj.removeProperty(DiskUsageProperty.class);
         } catch (IOException ex) {
             Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -709,7 +711,7 @@ public class BasicConfigurationAction implements Action {
             Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         String xml = sb.toString();
-        xml = xml.replace("<canRoam>true</canRoam>", "<canRoam>false</canRoam>");
+        xml=xml.replaceAll("<canRoam>([a-z])\\w+</canRoam>", "<canRoam>false</canRoam>");
         if (xml.contains("vectors")) {
             xml = xml.replace("<triggers class=\"vectors\">", "<triggers>");
         }
