@@ -23,6 +23,6 @@ public class ModifyProjectActionFactory extends TransientProjectActionFactory{
 	 */
 	@Override
 	public Collection<? extends Action> createFor(AbstractProject target){
-            return Collections.singleton(new MyAction(target));
+            return Collections.singleton(new BasicConfigurationAction(target));
         }
 }

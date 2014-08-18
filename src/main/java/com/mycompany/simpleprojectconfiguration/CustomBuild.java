@@ -15,17 +15,17 @@ import java.util.Calendar;
  *
  * @author kshantaraman
  */
-public class MyBuild extends Build<MyProject,MyBuild>{
+public class CustomBuild extends Build<CustomProject,CustomBuild>{
     
-    public MyBuild(MyProject project) throws IOException {
+    public CustomBuild(CustomProject project) throws IOException {
         super(project);
     }
 
-    public MyBuild(MyProject job, Calendar timestamp) {
+    public CustomBuild(CustomProject job, Calendar timestamp) {
         super(job, timestamp);
     }
 
-    public MyBuild(MyProject project, File buildDir) throws IOException {
+    public CustomBuild(CustomProject project, File buildDir) throws IOException {
         super(project, buildDir);
     }
     

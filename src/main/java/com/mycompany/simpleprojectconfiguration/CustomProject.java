@@ -15,15 +15,15 @@ import hudson.model.TopLevelItemDescriptor;
  *
  * @author kshantaraman
  */
-public class MyProject extends Project<MyProject,MyBuild> implements TopLevelItem{
+public class CustomProject extends Project<CustomProject,CustomBuild> implements TopLevelItem{
 
-    private MyProject(ItemGroup parent, String name) {
+    private CustomProject(ItemGroup parent, String name) {
         super(parent,name);
     }
 
     @Override
-    protected Class<MyBuild> getBuildClass() {
-        return MyBuild.class;
+    protected Class<CustomBuild> getBuildClass() {
+        return CustomBuild.class;
     }
 
     public TopLevelItemDescriptor getDescriptor() {
@@ -41,7 +41,7 @@ public class MyProject extends Project<MyProject,MyBuild> implements TopLevelIte
 
         @Override
         public TopLevelItem newInstance(ItemGroup parent, String string) {
-            return new MyProject(parent,string);
+            return new CustomProject(parent,string);
         }
      }
 }

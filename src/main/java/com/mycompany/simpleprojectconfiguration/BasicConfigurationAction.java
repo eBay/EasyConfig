@@ -63,13 +63,13 @@ import org.jenkinsci.plugins.envinject.EnvInjectJobPropertyInfo;
 
 /**
 * 
-*  MyAction class extends the Action class that is used to define Link Title,Link Icon,Link URL
-* The MyAction class is the base class where all the desired functionality of adding 
-* {@link MyAction#getBuilders()} builders , {@link MyAction#getSCM()} SCMs , 
+*  BasicConfigurationAction class extends the Action class that is used to define Link Title,Link Icon,Link URL
+ The BasicConfigurationAction class is the base class where all the desired functionality of adding 
+ {@link MyAction#getBuilders()} builders , {@link MyAction#getSCM()} SCMs , 
 * {@link MyAction#getBuildWrappers()} build wrappers and {@link MyAction#getPublishers()} publishers is implemented
 * 
 */
-public class MyAction implements Action {
+public class BasicConfigurationAction implements Action {
 
     private String currNode;
     private final Project currentProj;
@@ -167,7 +167,7 @@ public class MyAction implements Action {
         return false;
     }
 
-    public MyAction(AbstractProject project) {
+    public BasicConfigurationAction(AbstractProject project) {
         currentProj = (Project) project;
     }
 
@@ -405,7 +405,7 @@ public class MyAction implements Action {
                 currentProj.setJDK(currentProj.getJDK());
             }
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         getTriggers();
         getBuilders(formdata.getString("goals"), formdata.getString("pom"));
@@ -441,7 +441,7 @@ public class MyAction implements Action {
             }
             currentProj.addProperty(dp);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -456,7 +456,7 @@ public class MyAction implements Action {
             currentProj.setBuildDiscarder(lr);
             
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
         }
     }
 
@@ -477,7 +477,7 @@ public class MyAction implements Action {
         try {
             currentProj.setScm(gSCM);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex.getMessage());
         }
     }
 
@@ -498,9 +498,9 @@ public class MyAction implements Action {
                 currentProj.addTrigger(scmtrig);
             }
         } catch (ANTLRException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -530,7 +530,7 @@ public class MyAction implements Action {
                 currentProj.getBuildersList().add(mvn);
             }    
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -545,7 +545,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(FBP);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -559,7 +559,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(pmd);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -571,7 +571,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(arc);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -599,7 +599,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(cPub);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -611,7 +611,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(jArc);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -623,7 +623,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(jArc);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -644,7 +644,7 @@ public class MyAction implements Action {
         try {
             currentProj.getPublishersList().add(eMailPub);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -687,7 +687,7 @@ public class MyAction implements Action {
                 currentProj.getBuildWrappersList().add(tmbw);
             }
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -704,9 +704,9 @@ public class MyAction implements Action {
                 sb.append(currentLine);
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
         String xml = sb.toString();
         xml = xml.replace("<canRoam>true</canRoam>", "<canRoam>false</canRoam>");
@@ -836,7 +836,7 @@ public class MyAction implements Action {
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(MyAction.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BasicConfigurationAction.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }
